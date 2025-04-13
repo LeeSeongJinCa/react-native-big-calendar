@@ -38,6 +38,11 @@ import { Schedule } from './Schedule'
 
 export interface CalendarContainerProps<T extends ICalendarEventBase> {
   /**
+   * The children of the calendar container.
+   */
+  children?: React.ReactNode
+
+  /**
    * To remove Hours Column from week View.
    */
   hideHours?: boolean
@@ -159,6 +164,7 @@ export interface CalendarContainerProps<T extends ICalendarEventBase> {
 }
 
 function _CalendarContainer<T extends ICalendarEventBase>({
+  children,
   events,
   height,
   hourRowHeight,
@@ -395,7 +401,9 @@ function _CalendarContainer<T extends ICalendarEventBase>({
               onPressMoreLabel={onPressMoreLabel}
               renderCustomDateForMonth={renderCustomDateForMonth}
               disableMonthEventCellPress={disableMonthEventCellPress}
-            />
+            >
+              {children}
+            </CalendarBodyForMonthView>
           </React.Fragment>
         )}
         onPageChange={(page) => onSwipeEnd?.(getCurrentDate(page).toDate())}

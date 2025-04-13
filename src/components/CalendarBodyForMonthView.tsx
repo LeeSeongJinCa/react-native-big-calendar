@@ -5,6 +5,7 @@ import {
   type AccessibilityProps,
   Animated,
   Platform,
+  ScrollView,
   Text,
   TouchableHighlight,
   TouchableOpacity,
@@ -29,6 +30,7 @@ import { typedMemo } from '../utils/react'
 import { CalendarEventForMonthView } from './CalendarEventForMonthView'
 
 interface CalendarBodyForMonthViewProps<T extends ICalendarEventBase> {
+  children?: React.ReactNode
   containerHeight: number
   targetDate: dayjs.Dayjs
   events: T[]
@@ -59,6 +61,7 @@ interface CalendarBodyForMonthViewProps<T extends ICalendarEventBase> {
 }
 
 function _CalendarBodyForMonthView<T extends ICalendarEventBase>({
+  children,
   containerHeight,
   targetDate,
   style,
@@ -251,163 +254,170 @@ function _CalendarBodyForMonthView<T extends ICalendarEventBase>({
         setCalendarWidth(layout.width)
       }}
     >
-      {weeks.map((week, i) => (
-        <View
-          key={`${i}-${week.join('-')}`}
-          style={[
-            u['flex-1'],
-            theme.isRTL ? u['flex-row-reverse'] : u['flex-row'],
-            Platform.OS === 'android' && style, // TODO: in Android, backgroundColor is not applied to child components
-            {
-              minHeight: minCellHeight,
-            },
-          ]}
-        >
-          {showWeekNumber ? (
-            <View
-              style={[
-                i > 0 && u['border-t'],
-                { borderColor: theme.palette.gray['200'] },
-                u['p-2'],
-                u['w-20'],
-                u['flex-column'],
-                {
-                  minHeight: minCellHeight,
-                },
-              ]}
-              key={'weekNumber'}
-              {...calendarCellAccessibilityProps}
-            >
-              <Text
-                style={[
-                  { textAlign: 'center' },
-                  theme.typography.sm,
-                  {
-                    color: theme.palette.gray['800'],
-                  },
-                ]}
-              >
-                {week.length > 0
-                  ? targetDate.date(week[0]).startOf('week').add(4, 'days').isoWeek()
-                  : ''}
-              </Text>
-            </View>
-          ) : null}
-          {week
-            .map((d) =>
-              showAdjacentMonths ? targetDate.date(d) : d > 0 ? targetDate.date(d) : null,
-            )
-            .map((date, ii) => (
-              <TouchableOpacity
-                onLongPress={() => date && onLongPressCell && onLongPressCell(date.toDate())}
-                onPress={() => date && onPressCell && onPressCell(date.toDate())}
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {weeks.map((week, i) => (
+          <View
+            key={`${i}-${week.join('-')}`}
+            style={[
+              u['flex-1'],
+              theme.isRTL ? u['flex-row-reverse'] : u['flex-row'],
+              Platform.OS === 'android' && style,
+            ]}
+          >
+            {showWeekNumber ? (
+              <View
                 style={[
                   i > 0 && u['border-t'],
-                  theme.isRTL && (ii > 0 || showWeekNumber) && u['border-r'],
-                  !theme.isRTL && (ii > 0 || showWeekNumber) && u['border-l'],
                   { borderColor: theme.palette.gray['200'] },
                   u['p-2'],
-                  u['flex-1'],
+                  u['w-20'],
                   u['flex-column'],
                   {
                     minHeight: minCellHeight,
-                    zIndex: ii * -1,
-                  },
-                  {
-                    ...getCalendarCellStyle(date?.toDate(), i),
                   },
                 ]}
-                key={`${ii}-${date?.toDate()}`}
-                onLayout={({ nativeEvent: { layout } }) =>
-                  // Only set calendarCellHeight once because they are all same
-                  // Only set calendarCellHeight if disableMonthEventCellPress is true, since calendarCellHeihgt is only used when disableMonthEventCellPress is true
-                  i === 0 &&
-                  ii === 0 &&
-                  disableMonthEventCellPress &&
-                  setCalendarCellHeight(layout.height)
-                }
-                {...calendarCellAccessibilityPropsForMonthView}
+                key={'weekNumber'}
+                {...calendarCellAccessibilityProps}
               >
-                <TouchableOpacity
-                  onPress={() =>
-                    date &&
-                    (onPressDateHeader
-                      ? onPressDateHeader(date.toDate())
-                      : onPressCell?.(date.toDate()))
-                  }
-                  onLongPress={() =>
-                    date &&
-                    (onPressDateHeader
-                      ? onPressDateHeader(date.toDate())
-                      : onLongPressCell?.(date.toDate()))
-                  }
-                  {...calendarCellAccessibilityProps}
+                <Text
+                  style={[
+                    { textAlign: 'center' },
+                    theme.typography.sm,
+                    {
+                      color: theme.palette.gray['800'],
+                    },
+                  ]}
                 >
-                  {renderDateCell(date, i)}
+                  {week.length > 0
+                    ? targetDate.date(week[0]).startOf('week').add(4, 'days').isoWeek()
+                    : ''}
+                </Text>
+              </View>
+            ) : null}
+            {week
+              .map((d) =>
+                showAdjacentMonths ? targetDate.date(d) : d > 0 ? targetDate.date(d) : null,
+              )
+              .map((date, ii) => (
+                <TouchableOpacity
+                  onLongPress={() => date && onLongPressCell && onLongPressCell(date.toDate())}
+                  onPress={() => date && onPressCell && onPressCell(date.toDate())}
+                  style={[
+                    i > 0 && u['border-t'],
+                    theme.isRTL && (ii > 0 || showWeekNumber) && u['border-r'],
+                    !theme.isRTL && (ii > 0 || showWeekNumber) && u['border-l'],
+                    { borderColor: theme.palette.gray['200'] },
+                    u['p-2'],
+                    u['flex-1'],
+                    u['flex-column'],
+                    {
+                      minHeight: minCellHeight,
+                      zIndex: ii * -1,
+                    },
+                    {
+                      ...getCalendarCellStyle(date?.toDate(), i),
+                    },
+                  ]}
+                  key={`${ii}-${date?.toDate()}`}
+                  onLayout={({ nativeEvent: { layout } }) =>
+                    // Only set calendarCellHeight once because they are all same
+                    // Only set calendarCellHeight if disableMonthEventCellPress is true, since calendarCellHeihgt is only used when disableMonthEventCellPress is true
+                    i === 0 &&
+                    ii === 0 &&
+                    disableMonthEventCellPress &&
+                    setCalendarCellHeight(layout.height)
+                  }
+                  {...calendarCellAccessibilityPropsForMonthView}
+                >
+                  <TouchableOpacity
+                    onPress={() =>
+                      date &&
+                      (onPressDateHeader
+                        ? onPressDateHeader(date.toDate())
+                        : onPressCell?.(date.toDate()))
+                    }
+                    onLongPress={() =>
+                      date &&
+                      (onPressDateHeader
+                        ? onPressDateHeader(date.toDate())
+                        : onLongPressCell?.(date.toDate()))
+                    }
+                    {...calendarCellAccessibilityProps}
+                  >
+                    {renderDateCell(date, i)}
+                  </TouchableOpacity>
+                  {
+                    //Calendar body will re-render after calendarWidth/calendarCellHeight is set from layout event, prevent expensive operation during first render
+                    calendarWidth > 0 &&
+                      (!disableMonthEventCellPress || calendarCellHeight > 0) &&
+                      date &&
+                      sortedEvents(date).reduce(
+                        (elements, event, index, events) => [
+                          // biome-ignore lint/performance/noAccumulatingSpread: Acceptable to use spread operator here
+                          ...elements,
+                          index > maxVisibleEventCount ? null : index === maxVisibleEventCount ? (
+                            <Text
+                              key={`${index}-${event.start}-${event.title}-${event.end}`}
+                              style={[
+                                theme.typography.moreLabel,
+                                { marginTop: 2, color: theme.palette.moreLabel },
+                              ]}
+                              onPress={() => onPressMoreLabel?.(events, date.toDate())}
+                            >
+                              {moreLabel.replace(
+                                '{moreCount}',
+                                `${events.length - maxVisibleEventCount}`,
+                              )}
+                            </Text>
+                          ) : (
+                            <CalendarEventForMonthView
+                              key={`${index}-${event.start}-${event.title}-${event.end}`}
+                              event={event}
+                              eventCellStyle={eventCellStyle}
+                              eventCellAccessibilityProps={eventCellAccessibilityProps}
+                              onPressEvent={onPressEvent}
+                              renderEvent={renderEvent}
+                              date={date}
+                              dayOfTheWeek={ii}
+                              calendarWidth={calendarWidth}
+                              isRTL={theme.isRTL}
+                              eventMinHeightForMonthView={eventMinHeightForMonthView}
+                              showAdjacentMonths={showAdjacentMonths}
+                            />
+                          ),
+                        ],
+                        [] as (null | JSX.Element)[],
+                      )
+                  }
+                  {disableMonthEventCellPress &&
+                    calendarCellHeight > 0 && ( //if calendarCellHeight has not been set from layout event, then don't render the element since it will be 0 height
+                      /* In this case, we render `TouchableGradually` on the date cell to prevent event cell's touch events from being called. */
+                      <TouchableGradually
+                        style={{
+                          height: calendarCellHeight,
+                          width: Math.floor(calendarWidth / 7),
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                        }}
+                        onLongPress={() =>
+                          date && onLongPressCell && onLongPressCell(date.toDate())
+                        }
+                        onPress={() => date && onPressCell && onPressCell(date.toDate())}
+                        {...calendarCellAccessibilityProps}
+                      />
+                    )}
                 </TouchableOpacity>
-                {
-                  //Calendar body will re-render after calendarWidth/calendarCellHeight is set from layout event, prevent expensive operation during first render
-                  calendarWidth > 0 &&
-                    (!disableMonthEventCellPress || calendarCellHeight > 0) &&
-                    date &&
-                    sortedEvents(date).reduce(
-                      (elements, event, index, events) => [
-                        // biome-ignore lint/performance/noAccumulatingSpread: Acceptable to use spread operator here
-                        ...elements,
-                        index > maxVisibleEventCount ? null : index === maxVisibleEventCount ? (
-                          <Text
-                            key={`${index}-${event.start}-${event.title}-${event.end}`}
-                            style={[
-                              theme.typography.moreLabel,
-                              { marginTop: 2, color: theme.palette.moreLabel },
-                            ]}
-                            onPress={() => onPressMoreLabel?.(events, date.toDate())}
-                          >
-                            {moreLabel.replace(
-                              '{moreCount}',
-                              `${events.length - maxVisibleEventCount}`,
-                            )}
-                          </Text>
-                        ) : (
-                          <CalendarEventForMonthView
-                            key={`${index}-${event.start}-${event.title}-${event.end}`}
-                            event={event}
-                            eventCellStyle={eventCellStyle}
-                            eventCellAccessibilityProps={eventCellAccessibilityProps}
-                            onPressEvent={onPressEvent}
-                            renderEvent={renderEvent}
-                            date={date}
-                            dayOfTheWeek={ii}
-                            calendarWidth={calendarWidth}
-                            isRTL={theme.isRTL}
-                            eventMinHeightForMonthView={eventMinHeightForMonthView}
-                            showAdjacentMonths={showAdjacentMonths}
-                          />
-                        ),
-                      ],
-                      [] as (null | JSX.Element)[],
-                    )
-                }
-                {disableMonthEventCellPress &&
-                  calendarCellHeight > 0 && ( //if calendarCellHeight has not been set from layout event, then don't render the element since it will be 0 height
-                    /* In this case, we render `TouchableGradually` on the date cell to prevent event cell's touch events from being called. */
-                    <TouchableGradually
-                      style={{
-                        height: calendarCellHeight,
-                        width: Math.floor(calendarWidth / 7),
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                      }}
-                      onLongPress={() => date && onLongPressCell && onLongPressCell(date.toDate())}
-                      onPress={() => date && onPressCell && onPressCell(date.toDate())}
-                      {...calendarCellAccessibilityProps}
-                    />
-                  )}
-              </TouchableOpacity>
-            ))}
-        </View>
-      ))}
+              ))}
+          </View>
+        ))}
+
+        {children}
+      </ScrollView>
     </View>
   )
 }
