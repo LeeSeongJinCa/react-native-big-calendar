@@ -109,7 +109,7 @@ export const DoNotShowTime: Story = {
 
 export const OnDateChanged: Story = {
   render: () => {
-    const onChangeDate = React.useCallback(([start, end]) => {
+    const onChangeDate = React.useCallback(([start, end]: [Date, Date]) => {
       alert(`${start} - ${end}`)
     }, [])
 
